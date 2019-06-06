@@ -13,4 +13,6 @@
 .gameGrid td {
     border: 1px solid black;
     height: 50px;
+    width: 1%;
+    text-align: center;
 }

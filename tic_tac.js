@@ -3,10 +3,13 @@ function Tic_tac() {
         // т.к "this" в td.onclick, указывает на обьект td
             // поэтому сохраним ссылку на Tic_tac в переменной $this
     $this=this;
-    this.gridSize;
-    this.victoryCondition=3;
+    //// Все СВОЙСТВА ////
     //Ход игрока №0/№1 
     this.turn=0;
+    // Размер сетки
+    this.gridSize;
+    // Условие победы
+    this.victoryCondition;
     // Данное решение обеспечивает появление length в объекте
     this.players=[
         {mark:"X", seriesMarks:new SeriesMarks(1)},
@@ -22,20 +25,32 @@ function Tic_tac() {
         this.diagonal_bottom_left=num;
         this.diagonal_bottom_right=num;
     }
-    // Массив со (строками с клетками)
-    this.arrayTds=new Array();
+
     // Создание игрового поля
-    this.viewGamingField=function (gridSize) {
-        this.gridSize=gridSize;
-        if(gridSize>4){this.victoryCondition=4;}
+    this.viewGamingField=function (gridSize,victoryCondition) {
+        // Проверка корректности входных данных и инициализация
+        if(isNumeric(gridSize)){
+            this.gridSize=gridSize;
+        }else{
+            this.gridSize=3;    
+        }
+        // Для случая если размер сетки, меньше условия для победы
+        if(isNumeric(victoryCondition) && this.gridSize>=victoryCondition){
+            this.victoryCondition=victoryCondition;
+        }else{
+            this.victoryCondition=this.gridSize;
+        }
+        console.log(this.victoryCondition)
+        // Массив строк с клетками)
+        this.arrayTds=new Array();
         var wrapper=document.createElement('div'),
         table=document.createElement('table');
         wrapper.className="wrapperGrid";
         table.className="gameGrid";
-        for (let i = 0; i < gridSize; i++) {
+        for (let i = 0; i <  this.gridSize; i++) {
             this.arrayTds[i]=[];
             var row=document.createElement('tr');
-            for (let j = 0; j < gridSize; j++) {
+            for (let j = 0; j <  this.gridSize; j++) {
                 var td=document.createElement('td');
                 td.onclick=clickCell;
                 // Вот это я молодец...
@@ -46,6 +61,21 @@ function Tic_tac() {
             table.appendChild(row);
         }
         document.querySelector("body").appendChild(wrapper).appendChild(table);
+    };
+    // Очистка игровой сетки
+    this.clearGamingField=function () {
+        // Чистка ячеек
+        for(let i=0;i<this.gridSize;i++){
+            for(let j=0;j<this.gridSize;j++){
+                this.arrayTds[i][j].innerHTML="";
+            }
+        }
+        // Ход игрока по умолчанию
+        this.turn=0;
+        // Колличество серий меток (по направлениям) приводим к начальным значениям
+        for (let i = 0; i < this.players.length; i++) {
+            this.players[i].seriesMarks= new SeriesMarks(1);
+        }
     };
     function nextTurn(){
         $this.turn++;
@@ -62,22 +92,21 @@ function Tic_tac() {
             switch ($this.turn) {
                 case 1:
                     eventObj.target.innerHTML=$this.players[$this.turn].mark;
-                    checkForVictory(eventObj.target);
-                    nextTurn();
+                    if(checkForVictory(eventObj.target)){
+                        $this.clearGamingField();
+                    }else{
+                        nextTurn();
+                    }
                     break;
                 default:
                     eventObj.target.innerHTML=$this.players[$this.turn].mark;
-                    checkForVictory(eventObj.target);
-                    nextTurn();
+                    if(checkForVictory(eventObj.target)){
+                        $this.clearGamingField();
+                    }else{
+                        nextTurn();
+                    }
                     break;
             }
-            /*if($this.turn==1){
-                eventObj.target.innerHTML=$this.players.tic;
-                $this.turn=2;
-            }else{
-                eventObj.target.innerHTML=$this.players.toe;
-                $this.turn=1;
-            }*/
         }
     }
     // Лучше добавить функцию и спастись от увеличения размера другой: clickCell,
@@ -89,6 +118,27 @@ function Tic_tac() {
     function checkForVictory(currentTd){
         checkTopArea(currentTd);
         checkBottomArea(currentTd);
+        checkLeftSide(currentTd);
+        checkRightSide(currentTd);
+        // После рекурсивных проверок всех сторон два условия для вердикта
+        ////    ////    ////    ////    ////    ////    ////    ////
+        if(checkSeriesMarks($this.players[$this.turn].seriesMarks)){
+            console.log("Победа игрока "+$this.turn);
+            return true;
+        }
+        else{
+                $this.players[$this.turn].seriesMarks=new SeriesMarks(1);
+        }
+        return false;
+        //// ОБЬЯВЛЕНИЕ вложенных ФУНКЦИЙ ////
+        function checkSeriesMarks(Marks){
+            for (let side in Marks) {
+                if(Marks[side]>=$this.victoryCondition){
+                    return true;
+                }
+            }
+            return false;
+        }
         function checkTopArea(currentTd) {
             // Текущие индексы строки/ячейки в массиве $this.arrayTds
             var indexTd=currentTd.cellIndex,
@@ -153,26 +203,34 @@ function Tic_tac() {
                 }
             }
         }
-            // После рекурсивных проверок всех сторон два условия для вердикта
-            ////    ////    ////    ////    ////    ////    ////    ////
-            // else if($this.players[$this.turn].seriesMarks.some(function(sideSeries){
-            //     return(sideSeries>=$this.victoryCondition);
-            // })){
-            if(checkSeriesMarks($this.players[$this.turn].seriesMarks)){
-                console.log("Победа игрока "+$this.turn);
-                return null;
+        function checkLeftSide(currentTd){
+            var indexTd=currentTd.cellIndex,
+                indexRow=currentTd.parentElement.rowIndex,
+                mark=$this.players[$this.turn].mark;
+            // Проверка существования левой ячейки
+            if($this.arrayTds[indexRow][indexTd-1]!==undefined && $this.arrayTds[indexRow][indexTd-1].innerHTML.indexOf(mark)!==-1){
+                var left_td=$this.arrayTds[indexRow][indexTd-1];
+                // Увеличиваем нашу серию меток...
+                $this.players[$this.turn].seriesMarks.left++;
+                checkLeftSide(left_td);
+                return;
             }
-            else{
-                  $this.players[$this.turn].seriesMarks=new SeriesMarks(1);
-            }
-        return null;
-        function checkSeriesMarks(Marks){
-            for (let side in Marks) {
-                if(Marks[side]>=$this.victoryCondition){
-                    return true;
-                }
-            }
-            return false;
         }
+        function checkRightSide(currentTd){
+            var indexTd=currentTd.cellIndex,
+                indexRow=currentTd.parentElement.rowIndex,
+                mark=$this.players[$this.turn].mark;
+            // Проверка существования правой ячейки
+            if($this.arrayTds[indexRow][indexTd+1]!==undefined && $this.arrayTds[indexRow][indexTd+1].innerHTML.indexOf(mark)!==-1){
+                var right_td=$this.arrayTds[indexRow][indexTd+1];
+                // Увеличиваем нашу серию меток...
+                $this.players[$this.turn].seriesMarks.right++;
+                checkRightSide(right_td);
+                return;
+            }
+        }
+    }
+    function isNumeric(n){
+        return !isNaN(parseFloat(n) && isFinite(n));
     }
 }

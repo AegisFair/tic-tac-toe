@@ -40,7 +40,6 @@ function Tic_tac() {
         }else{
             this.victoryCondition=this.gridSize;
         }
-        console.log(this.victoryCondition)
         // Массив строк с клетками)
         this.arrayTds=new Array();
         var wrapper=document.createElement('div'),
@@ -107,7 +106,20 @@ function Tic_tac() {
                     }
                     break;
             }
+            if(!(isfreeCells())){
+                $this.clearGamingField();
+            }
         }
+    }
+    function isfreeCells(){
+        for(let i=0;i<$this.gridSize;i++){
+            for(let j=0;j<$this.gridSize;j++){
+                if(!($this.arrayTds[i][j].innerHTML)){
+                    return true;
+                }
+            }
+        }
+        return false;
     }
     // Лучше добавить функцию и спастись от увеличения размера другой: clickCell,
         // возможно в будущем, что-то еще будем размещать в клетке вместе с "целевым элементом"

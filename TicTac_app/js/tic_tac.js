@@ -109,15 +109,15 @@ function Tic_tac() {
                     }
                     break;
             }
-            if(!(isfreeCells())){
+            if(!(isFreeCells.call($this))){
                 $this.clearGamingField();
             }
         }
     }
-    function isfreeCells(){
-        for(let i=0;i<$this.gridSize;i++){
-            for(let j=0;j<$this.gridSize;j++){
-                if(!($this.arrayTds[i][j].innerHTML)){
+    function isFreeCells(){
+        for(let i=0;i<this.gridSize;i++){
+            for(let j=0;j<this.gridSize;j++){
+                if(!(this.arrayTds[i][j].innerHTML)){
                     return true;
                 }
             }

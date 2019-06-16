@@ -10,6 +10,8 @@ function Tic_tac() {
     this.gridSize;
     // Условие победы
     this.victoryCondition;
+    // Массив строк с клетками
+    this.arrayTds;
     // Данное решение обеспечивает появление length в объекте
     this.players=[
         {mark:"X", seriesMarks:new SeriesMarks(1)},
@@ -84,7 +86,8 @@ function Tic_tac() {
     }
     function clickCell(eventObj){
         // Поле не пустое
-        if(checkCellEmpty(eventObj)){
+        if(checkCellnoEmpty(eventObj)){
+            console.log("Выберите другую клетку")
             // можно вывести сообщение
                 // с просьбой выбрать другую клетку
         }else{
@@ -124,7 +127,7 @@ function Tic_tac() {
     // Лучше добавить функцию и спастись от увеличения размера другой: clickCell,
         // возможно в будущем, что-то еще будем размещать в клетке вместе с "целевым элементом"
             //поэтому встанет вопрос: отсутсвием какого элемента мы будем считать клетку пустой?.
-    function checkCellEmpty(e){
+    function checkCellnoEmpty(e){
         return e.target.innerHTML;
     }
     function checkForVictory(currentTd){
